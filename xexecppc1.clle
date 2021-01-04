@@ -1,0 +1,72 @@
+/*------------------------------------------------------------------*/
+/*CRTBNDCL   PGM(yourlib/XEXECPPC1) SRCFILE(yourlib/xExecSrc)       */
+/*           SRCMBR(XEXECPPC1) DFTACTGRP(*NO) ACTGRP(*NEW)          */
+/*------------------------------------------------------------------*/
+PGM        PARM(&XSCRIPT &FILE &VALS &callLvl)
+
+DCL        VAR(&XSCRIPT) TYPE(*CHAR) LEN(10)
+DCL        VAR(&FILE) TYPE(*CHAR) LEN(20)
+DCL        VAR(&XSCRIPTFIL) TYPE(*CHAR) LEN(10)
+DCL        VAR(&XSCRIPTLIB) TYPE(*CHAR) LEN(10)
+DCL        VAR(&callLvl) TYPE(*DEC) LEN(2)
+DCL        VAR(&VALS) TYPE(*CHAR) LEN(498) /* 2+(50+2)*8 */
+DCL        VAR(&RETCOD) TYPE(*char) LEN(1)
+DCL        VAR(&jobtype) TYPE(*char) LEN(1)
+
+/*------------------------------------------------------------------*/
+/*1) Init fields                                                    */
+/*------------------------------------------------------------------*/
+CHGVAR     VAR(&XSCRIPTFIL) VALUE(%SST(&FILE 1 10))
+CHGVAR     VAR(&XSCRIPTLIB) VALUE(%SST(&FILE 11 10))
+RTVJOBA    TYPE(&JOBTYPE)
+
+/*------------------------------------------------------------------*/
+/*2) on first call check the log file member                        */
+/*------------------------------------------------------------------*/
+IF         COND(&callLvl = 0) THEN(DO)
+CHKOBJ     OBJ(&XSCRIPTLIB/XLOG) OBJTYPE(*FILE) MBR(&XSCRIPT)
+
+MONMSG     MSGID(CPF9815) +
+  EXEC(ADDPFM FILE(&XSCRIPTLIB/XLOG) MBR(&XSCRIPT))
+
+MONMSG     MSGID(CPF9801) +
+  EXEC(CRTSRCPF FILE(&XSCRIPTLIB/XLOG) RCDLEN(228) MBR(&XSCRIPT))
+
+CLRPFM     FILE(&XSCRIPTLIB/XLOG) MBR(&XSCRIPT)
+OVRDBF     FILE(XLOG) TOFILE(&XSCRIPTLIB/XLOG) MBR(&XSCRIPT) +
+           OVRSCOPE(*JOB)
+ENDDO
+
+/*------------------------------------------------------------------*/
+/*3) override the script                                            */
+/*------------------------------------------------------------------*/
+OVRDBF     FILE(XSCRIPT) TOFILE(&XSCRIPTLIB/&XSCRIPTFIL) +
+    MBR(&XSCRIPT) OVRSCOPE(*ACTGRPDFN)
+
+/*------------------------------------------------------------------*/
+/*4) call interpreter                                               */
+/*------------------------------------------------------------------*/
+CALL       PGM(XEXECPPC2) +
+PARM(&RETCOD &XSCRIPT &XSCRIPTLIB &XSCRIPTFIL &VALS &callLvl &jobtype)
+
+/*------------------------------------------------------------------*/
+/*5) free the overrides                                             */
+/*------------------------------------------------------------------*/
+DLTOVR     FILE(XSCRIPT) LVL(*ACTGRPDFN)
+
+IF         COND(&callLvl = 0) THEN(DLTOVR FILE(XLOG) LVL(*JOB))
+
+RCLACTGRP ACTGRP(*ELIGIBLE)
+
+/*------------------------------------------------------------------*/
+/*6) Message to caller                                              */
+/*------------------------------------------------------------------*/
+select
+when       COND(&RETCOD = '0') then(+
+SNDPGMMSG MSG('The script ended normally') MSGTYPE(*COMP))
+when       COND(&RETCOD = '1') then(+
+SNDPGMMSG MSG('The script has been self submited') MSGTYPE(*COMP))
+when       COND(&RETCOD = '2') then(+
+SNDPGMMSG MSGID(CPC1219) MSGF(QCPFMSG) MSGTYPE(*ESCAPE))
+endselect
+endpgm
