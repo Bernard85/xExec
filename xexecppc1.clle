@@ -1,123 +1,116 @@
-/* VERSION: 2023-08-23                                               */
-/*‚------------------------------------------------------------------*/
-/*‚crtbndcl pgm(BERNARD85/xexecppc1)                                 */
-/*‚         SRCFILE(BERNARD85/SRC)   strstmf('/?/src/xexecppc1.clle')*/
-/*‚         dftactgrp(*no)                                           */
-/*‚         actgrp(*new)                                             */
-/*‚------------------------------------------------------------------*/
-PGM        PARM(&XSCRIPT &FILE &PARMS &callLvl)
+/* VERSION: 2025-07-07                                               */
+/* ------------------------------------------------------------------*/
+/* crtbndcl pgm(BERNARD85/xexecppc1)                                 */
+/*          SRCFILE(BERNARD85/SRC)   strstmf('/?/src/xexecppc1.clle')*/
+/* ------------------------------------------------------------------*/
+             PGM        PARM( XSCRIPT  FILE  PARMS  CALLLVL)
 
-DCL        VAR(&XSCRIPT)    TYPE(*CHAR) LEN(10)
-DCL        VAR(&FILE)       TYPE(*CHAR) LEN(20)
-dcl        VAR(&XSCRIPTFIL) TYPE(*CHAR) LEN(10)
-DCL        VAR(&XSCRIPTLIB) TYPE(*CHAR) LEN(10)
-DCL        VAR(&callLvl)    TYPE(*DEC) LEN(2)
-DCL        VAR(&PARMS)      TYPE(*CHAR) LEN(740) /* 2+(80+2)*9 */
-DCL        VAR(&RETCOD)     TYPE(*char) LEN(1)
-DCL        VAR(&jobtype)    TYPE(*char) LEN(1)
-DCL        VAR(&QDATETIME)  TYPE(*char) LEN(20)
-DCL        VAR(&TEXT)       TYPE(*char) LEN(50)
-DCL        VAR(&TAG)        TYPE(*char) LEN(4)
+DCLPRCOPT  DFTACTGRP(*NO) ACTGRP(*NEW) BNDDIR(XEXEC)
 
-DCL        VAR(&SBM)        TYPE(*CHAR) LEN(4) value(x'23E28294')
-DCL        VAR(&GO)         TYPE(*CHAR) LEN(3) value(x'238796')
-DCL        VAR(&OK)         TYPE(*CHAR) LEN(3) value(x'3B9692')
-DCL        VAR(&KO)         TYPE(*CHAR) LEN(3) value(x'2B9296')
-/*‚------------------------------------------------------------------*/
-/*‚1) Init fields                                                    */
-/*‚------------------------------------------------------------------*/
-CHGVAR     VAR(&XSCRIPTFIL) VALUE(%SST(&FILE 1 10))
-CHGVAR     VAR(&XSCRIPTLIB) VALUE(%SST(&FILE 11 10))
-RTVJOBA    TYPE(&JOBTYPE)
+DCL        VAR( XSCRIPT)    TYPE(*CHAR) LEN(10)
+DCL        VAR( FILE)       TYPE(*CHAR) LEN(20)
+dcl        VAR( XSCRIPTFIL) TYPE(*CHAR) LEN(10)
+DCL        VAR( XSCRIPTLIB) TYPE(*CHAR) LEN(10)
+DCL        VAR( callLvl_)    TYPE(*DEC) LEN(2)
+DCL        VAR( callLvl)    TYPE(*DEC) LEN(2)
+DCL        VAR( PARMS)      TYPE(*CHAR) LEN(740) /* 2+(80+2)*9 */
+DCL        VAR( RETCOD)     TYPE(*char) LEN(1)
+DCL        VAR( jobtype)    TYPE(*char) LEN(1)
+DCL        VAR( TEXT)       TYPE(*char) LEN(50)
+DCL        VAR( STATUS)     TYPE(*char) LEN(2)
+/* ------------------------------------------------------------------*/
+/* 0) Init fields                                                    */
+/* ------------------------------------------------------------------*/
+CHGVAR     VAR( XSCRIPTFIL) VALUE( SST( FILE 1 10))
+CHGVAR     VAR( XSCRIPTLIB) VALUE( SST( FILE 11 10))
+RTVJOBA    TYPE( JOBTYPE)
 
-/*‚------------------------------------------------------------------*/
-/*‚1) monitor the launch                                             */
-/*‚------------------------------------------------------------------*/
-             IF cond(&CALLLVL = 0) then(DO)
-             if cond(&JOBTYPE = '0') then(+
-             chgvar var(&TAG) VALUE(&SBM))
-             else +
-             chgvar var(&TAG) VALUE(&GO)
-             callsubr subr(MONITOR)
-             ENDDO
-/*‚------------------------------------------------------------------*/
-/*‚2) on first call check the log file member                        */
-/*‚------------------------------------------------------------------*/
-IF         COND(&callLvl = 0) THEN(DO)
-CHKOBJ     OBJ(&XSCRIPTLIB/XLOG) OBJTYPE(*FILE) MBR(&XSCRIPT)
+/* ------------------------------------------------------------------*/
+/* 1) monitor the launch                                             */
+/* ------------------------------------------------------------------*/
+/*           IF cond( PARMS() *EQ 3 ) then(DO)  calllvl_             */
+/*           CHGVAR     VAR( CALLLVL) VALUE(0)                       */
+/*           enddo                                                   */
+/*           ELSE       CMD(DO)                                      */
+/*           CHGVAR     VAR( CALLLVL) VALUE(CALLLVL_)                */
+/*           ENDDO                                                   */
+/* ------------------------------------------------------------------*/
+/* 2) on first call check the log file member                        */
+/* ------------------------------------------------------------------*/
+IF         COND( callLvl = 0) THEN(DO)
+CHKOBJ     OBJ( XSCRIPTLIB/XLOG) OBJTYPE(*FILE) MBR( XSCRIPT)
 
 MONMSG     MSGID(CPF9815) +
-  EXEC(ADDPFM FILE(&XSCRIPTLIB/XLOG) MBR(&XSCRIPT))
+  EXEC(ADDPFM FILE( XSCRIPTLIB/XLOG) MBR( XSCRIPT))
 
 MONMSG     MSGID(CPF9801) +
-  EXEC(CRTSRCPF FILE(&XSCRIPTLIB/XLOG) RCDLEN(228) MBR(&XSCRIPT))
+  EXEC(CRTSRCPF FILE( XSCRIPTLIB/XLOG) RCDLEN(228) MBR( XSCRIPT))
 
-CLRPFM     FILE(&XSCRIPTLIB/XLOG) MBR(&XSCRIPT)
-OVRDBF     FILE(XLOG) TOFILE(&XSCRIPTLIB/XLOG) MBR(&XSCRIPT) +
+CLRPFM     FILE( XSCRIPTLIB/XLOG) MBR( XSCRIPT)
+OVRDBF     FILE(XLOG) TOFILE( XSCRIPTLIB/XLOG) MBR( XSCRIPT) +
            OVRSCOPE(*JOB)
 ENDDO
 
-/*‚------------------------------------------------------------------*/
-/*‚3) override the script                                            */
-/*‚------------------------------------------------------------------*/
-OVRDBF     FILE(XSCRIPT) TOFILE(&XSCRIPTLIB/&XSCRIPTFIL) +
-    MBR(&XSCRIPT) OVRSCOPE(*ACTGRPDFN)
+/* ------------------------------------------------------------------*/
+/* 3) override the script                                            */
+/* ------------------------------------------------------------------*/
+OVRDBF     FILE(XSCRIPT) TOFILE( XSCRIPTLIB/ XSCRIPTFIL) +
+    MBR( XSCRIPT) OVRSCOPE(*ACTGRPDFN)
 
-/*‚------------------------------------------------------------------*/
-/*‚4) call interpreter                                               */
-/*‚------------------------------------------------------------------*/
+/* ------------------------------------------------------------------*/
+/* 4) call interpreter                                               */
+/* ------------------------------------------------------------------*/
 CALL       PGM(XEXECPPC2) +
-PARM(&RETCOD &XSCRIPT &XSCRIPTLIB &XSCRIPTFIL &parms &callLvl &jobtype)
+PARM( RETCOD  XSCRIPT  XSCRIPTLIB  XSCRIPTFIL  parms  callLvl  jobtype)
 
-/*‚------------------------------------------------------------------*/
-/*‚5) free the overrides                                             */
-/*‚------------------------------------------------------------------*/
+/* ------------------------------------------------------------------*/
+/* 5) free the overrides                                             */
+/* ------------------------------------------------------------------*/
 DLTOVR     FILE(XSCRIPT) LVL(*ACTGRPDFN)
 
-IF         COND(&callLvl = 0) THEN(DO)
+IF         COND( callLvl = 0) THEN(DO)
   DLTOVR FILE(XLOG) LVL(*JOB)
   monmsg msgid(CPF9841)
 enddo
 
 RCLACTGRP ACTGRP(*ELIGIBLE)
 
-/*‚------------------------------------------------------------------*/
-/*‚6) Message to caller                                              */
-/*‚------------------------------------------------------------------*/
-         if COND(&CALLLVL = 0) then(DO)
+/* ------------------------------------------------------------------*/
+/* 6) Monitor the result on the script launcher                      */
+/* ------------------------------------------------------------------*/
+         if COND( CALLLVL = 0) then(DO)
 select
-when       COND(&RETCOD = '0') then(chgvar var(&tag) value(&ok))
-when       COND(&RETCOD = '2') then(chgvar var(&tag) value(&ko))
-when       COND(&RETCOD = '1') then(chgvar var(&tag) value(&sbm))
+when       COND( RETCOD = '0') then(chgvar var( STATUS) value('OK'))
+when       COND( RETCOD = '2') then(chgvar var( STATUS) value('KO'))
+when       COND( RETCOD = '1') then(chgvar var( STATUS) value('SB'))
 endselect
          callSUBR subr(MONITOR)
          enddo
 
-/*‚------------------------------------------------------------------*/
-/*‚7) Message to caller                                              */
-/*‚------------------------------------------------------------------*/
+/* ------------------------------------------------------------------*/
+/* 7) Message to caller                                              */
+/* ------------------------------------------------------------------*/
 select
-when cond(&retcod = '0') then(+
+when cond( retcod = '0') then(+
 sndpgmmsg msg('The script ended normaly') MSGTYPE(*COMP))
-when cond(&retcod = '1') then(+
+when cond( retcod = '1') then(+
 sndpgmmsg msg('The script has been self submited') MSGTYPE(*COMP))
-when cond(&retcod = '2') then(+
+when cond( retcod = '2') then(+
 sndpgmmsg msgid(CPC1219) msgf(QCPFMSG) msgtype(*escape))
 endselect
 
-/*‚------------------------------------------------------------------*/
-/*‚Monitor the step                                                  */
-/*‚------------------------------------------------------------------*/
+/* ------------------------------------------------------------------*/
+/* Monitor the step on XSCRIPT                                       */
+/* ------------------------------------------------------------------*/
              SUBR       SUBR(MONITOR)
-             RTVMBRD    FILE(&XSCRIPTLIB/&XSCRIPTFIL) MBR(&XSCRIPT) +
-                          TEXT(&TEXT)
-             RTVSYSVAL  SYSVAL(QDATETIME) RTNVAR(&QDATETIME)
-             /*12345678901234567890*/
-             /*AAAAMMDDHHmmSSxxxxxx*/
-             CHGVAR     VAR(&TEXT) VALUE(%SST(&TEXT 1 33) || &TAG || +
-                          %SST(&QDATETIME 3 6) || ' ' || +
-                          %SST(&QDATETIME 9 6))
-             CHGPFM     FILE(&XSCRIPTLIB/&XSCRIPTFIL) MBR(&XSCRIPT) +
-                          TEXT(&TEXT)
+             RTVMBRD    FILE( XSCRIPTLIB/ XSCRIPTFIL) MBR( XSCRIPT) +
+                          TEXT( TEXT)
+
+             CALLPRC    PRC(SCRTXTFMT) PARM(( TEXT   *BYREF)        +
+                                            ( STATUS *BYREF))       +
+                                     RTNVAL( TEXT)
+
+             CHGPFM     FILE( XSCRIPTLIB/ XSCRIPTFIL) MBR( XSCRIPT) +
+                          TEXT( TEXT)
              ENDSUBR
              ENDPGM
