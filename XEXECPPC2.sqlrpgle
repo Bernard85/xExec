@@ -1,9 +1,9 @@
-      // Version: 2025-07-07
+      // Version: 2025-07-12
      H option(*nodebugio) DFTACTGRP(*NO) actgrp(*caller) bndDir('XEXEC')
       // -----------------------------------------------------------------------
-      // CRTSQLRPGI OBJ(qtemp/XEXECPPC2)
-      //            SRCFILE(bernard85/src)
-      //            OBJTYPE(*module) DBGVIEW(*SOURCE)
+      // CRTSQLRPGI OBJ(yourlib/XEXECPPC2)
+      //            SRCFILE(yourlib/src)
+      //            OBJTYPE(*PGM) DBGVIEW(*SOURCE)
       // -----------------------------------------------------------------------
       // IBM functions
       // -----------------------------------------------------------------------
@@ -89,27 +89,27 @@
        // Return code
        retcod='0';
        // fit variables
-       xScrMbr$= trim(xScrMbr);
-       xScrLib$= trim(xScrLib);
-       xScrFil$= trim(xScrFil);
+       xScrMbr$=%trim(xScrMbr);
+       xScrLib$=%trim(xScrLib);
+       xScrFil$=%trim(xScrFil);
        // current job/library/file
-       job10= trim(pgmsds.job);
-       job28=pgmsds.number+'/'+ trim(pgmsds.user)+'/'+ trim(pgmsds.job);
+       job10=%trim(pgmsds.job);
+       job28=pgmsds.number+'/'+%trim(pgmsds.user)+'/'+%trim(pgmsds.job);
        // root
        root=xScrMbr$;
-       p= scan('_':xScrMbr);
+       p=%scan('_':xScrMbr);
        if p>1;
-         root= subst(xScrMbr:1:p-1);
+         root=%subst(xScrMbr:1:p-1);
        endIf;
        // Allow write
        exec sql SET OPTION commit=*none, DatFmt=*ISO, decmpt=*period;
        // Message for script begin (first call only)
        if callLvl=0;
-         t0= timeStamp();
+         t0=%timeStamp();
          addLog(GR:'Script '+xScrLib$+'/'+xScrFil$+'.'+xScrMbr$+
-                ' started on ' + char( date())+ ' at ' + char( time())+G);
+                ' started on ' +%char(%date())+ ' at ' +%char(%time())+G);
          addLog(GR
-               :'the processing job is '+job28+'-'+ trim(pgmSds.user$)+G);
+               :'the processing job is '+job28+'-'+%trim(pgmSds.user$)+G);
        endIf;
        // Loading script --> oDta() + maxDta
        exec sql declare Input cursor for
@@ -125,10 +125,10 @@
          return;
        endIf;
        // Loading Parmarameter -> oParm() + maxParm
-       pMaxParm= addr(Parms);
+       pMaxParm=%addr(Parms);
        clear oParm;
        for n=1 to maxParm;
-         pParmn= addr(Parms)+ size(maxParm)+( size(tParm))*(n-1);
+         pParmn=%addr(Parms)+%size(maxParm)+(%size(tParm))*(n-1);
          if maxParm=1 and parmn='*NONE';
            return;
          endif;
@@ -146,13 +146,13 @@
        for iDta=1 to maxDta;
          // Replace variable Parmaters
          xDta=replaceVal(oDta(iDta));
-         xDta_= trim(xDta);
+         xDta_=%trim(xDta);
          // copy line to log
          addLog(' ':xDta);
 
          // to load copy-book
-          if  len(xDta_)>=5
-         and  subst(xDta_:1:5)='/COPY';
+          if %len(xDta_)>=5
+         and %subst(xDta_:1:5)='/COPY';
            copyBook(xDta);
          else;
            // Buffer loading
@@ -178,10 +178,10 @@
      d outDta          s            228    varying
      d v               s              3u 0
        // Current script
-       outDta= scanRpl('#0':xScrMbr$:inDta);
+       outDta=%scanRpl('#0':xScrMbr$:inDta);
        // Values for parameters
        for v=1 to maxParm$;
-         outDta= scanRpl('#'+ char(v):oParm(v):outDta);
+         outDta=%scanRpl('#'+%char(v):oParm(v):outDta);
        endFor;
        // Values for other keyWords
        replaceKW(outDta:'#R'     :root                                 );
@@ -189,9 +189,9 @@
        replaceKW(outDta:'#J'     :job10                                );
        replaceKW(outDta:'#L'     :xScrLib$                             );
        replaceKW(outDta:'#F'     :xScrFil$                             );
-       replaceKW(outDta:'#NOW(0)': subst( char( timeStamp():*iso):1:19));
-       replaceKW(outDta:'#DATE(6)': subst( char( date():*iso0):3:6)    );
-       replaceKW(outDta:'#DATE(8)': subst( char( date():*iso0):1:8)    );
+       replaceKW(outDta:'#NOW(0)':%subst(%char(%timeStamp():*iso):1:19));
+       replaceKW(outDta:'#DATE(6)':%subst(%char(%date():*iso0):3:6)    );
+       replaceKW(outDta:'#DATE(8)':%subst(%char(%date():*iso0):1:8)    );
        return outDta;
      p                 e
       // -----------------------------------------------------------------------
@@ -209,13 +209,13 @@
        // upper case
        outDta_=$upper(outDta);
        // loop on each occurences
-       p= scan(KW:outDta_);
+       p=%scan(KW:outDta_);
        dow p>0;
 
-         outDta =  replace(KWVal:outDta :p: len(KW));
-         outDta_=  replace(KWVal:outDta :p: len(KW));
+         outDta = %replace(KWVal:outDta :p:%len(KW));
+         outDta_= %replace(KWVal:outDta :p:%len(KW));
 
-         p= scan(KW:outDta_:p);
+         p=%scan(KW:outDta_:p);
         endDo;
      p                 e
       // -----------------------------------------------------------------------
@@ -227,20 +227,20 @@
       *
      D trimDta         s            228    varying inz('')
      D p               s              3u 0
-       trimDta= trim(xDta);
+       trimDta=%trim(xDta);
        // Comment line
-       if   len(trimDta)>=2
-       and ( subst(trimDta:1:2)='//'or  subst(trimDta:1:2)='--');
+       if  %len(trimDta)>=2
+       and (%subst(trimDta:1:2)='//'or %subst(trimDta:1:2)='--');
          return;
        endIf;
        // Remove right comment
        p=$scanr('//':trimDta);
        if p>1;
-         trimDta= trim( subst(trimDta:1:p-1));
+         trimDta=%trim(%subst(trimDta:1:p-1));
        endif;
        // Margin for indentation (log file)
        if buffer='';
-         margin= check(' ':xDta);
+         margin=%check(' ':xDta);
          Buffer=trimDta;
        else;
          Buffer+=' '+trimDta;
@@ -253,15 +253,15 @@
        fError=*off;
        message='';
        // If the last character is not semicolon it is not a command
-       if buffer='' or  subst(buffer: len(buffer):1)<>';';
+       if buffer='' or %subst(buffer:%len(buffer):1)<>';';
          return;
        endIf;
        // Clear final semicolon
-        subst(buffer: len(buffer):1)=' ';
+       %subst(buffer:%len(buffer):1)=' ';
        // Retreive the order (1st word)
        getOrder();
        // test/launch the buffer
-       t1= timeStamp();
+       t1=%timeStamp();
        if isSql();
          goSql();
        elseif isSpecif();
@@ -279,14 +279,14 @@
      D getOrder        PI
      D  p              s              3u 0
        order='';
-       p= scan(' ':buffer);
+       p=%scan(' ':buffer);
        if p=0;
-         p= len(buffer);
+         p=%len(buffer);
        endIf;
-       if p> size(order)-2 or p=0;
+       if p>%size(order)-2 or p=0;
          return;
        endIf;
-       order= subst(buffer:1:p-1);
+       order=%subst(buffer:1:p-1);
        ORDER=$upper(order);
 
      p                 e
@@ -298,7 +298,7 @@
 
        // call$ -> call sql
        if order='CALL$';
-          subst(buffer:1:5)='call ';
+         %subst(buffer:1:5)='call ';
        endif;
 
        return order = 'CALL$'
@@ -337,7 +337,7 @@
        exec sql get diagnostics condition 1
               :message=MESSAGE_TEXT,
               :sqlstate = RETURNED_sqlstate;
-       if  subst(sqlstate:1:1)<>'0';
+       if %subst(sqlstate:1:1)<>'0';
          fError=*on;
        endIf;
      P                 e
@@ -377,14 +377,14 @@
      d toFile          s             21    varying
      d p1              s              3u 0
      d oDta2           ds                  likeDs(tDta) dim(20000)
-       xDta_ = trim(xDta);
+       xDta_ =%trim(xDta);
        mbr   =getParm(xDta_:'MBR');
        toFile=getParm(xDta_:'TOFILE':xScrLib$+'/XCOPY');
        // prepare/launch the ovrdbf
-       cmd='OVRDBF FILE(XCOPY) TOFILE( F) MBR( M)';
-       cmd= scanRpl(' M':mbr:cmd);
-       cmd= scanRpl(' F':tofile:cmd);
-       qcmdExc(cmd: len(cmd));
+       cmd='OVRDBF FILE(XCOPY) TOFILE(&F) MBR(&M)';
+       cmd=%scanRpl('&M':mbr:cmd);
+       cmd=%scanRpl('&F':tofile:cmd);
+       qcmdExc(cmd:%len(cmd));
 
        // Load copy sources
        exec sql declare cCopy cursor for
@@ -393,16 +393,16 @@
        exec sql fetch next from cCopy for :maxCpy rows into :oCpy;
        exec sql get diagnostics :maxcpy=ROW_COUNT;
        Message='Copy was executed without error message : '
-              + trim( char( dec(maxCpy)))+' lines were included';
+              +%trim(%char(%dec(maxCpy)))+' lines were included';
        exec sql close cCopy;
 
        cmd='DLTOVR FILE(XCOPY)';
-       qCmdExc(cmd: len(cmd));
+       qCmdExc(cmd:%len(cmd));
 
        // lines are included in the original source
-        subarr(oDta2:1)= subarr(oDta:1:iDta);
-        subarr(oDta2:iDta+1)= subarr(oCpy:1:maxCpy);
-        subarr(oDta2:iDta+1+maxCpy)= subarr(oDta:iDta+1:maxDta-iDta);
+       %subarr(oDta2:1)=%subarr(oDta:1:iDta);
+       %subarr(oDta2:iDta+1)=%subarr(oCpy:1:maxCpy);
+       %subarr(oDta2:iDta+1+maxCpy)=%subarr(oDta:iDta+1:maxDta-iDta);
 
        oDta=oDta2;
 
@@ -422,21 +422,21 @@
      d  l              s              3u 0
      d  prmValue       s             80a    varying
       *
-        p= scan(' '+$upper(prm)+'(':$upper(cmd));
+        p=%scan(' '+$upper(prm)+'(':$upper(cmd));
 
          if p=0
-        and  parms()=3;
+        and %parms()=3;
           return default;
         elseif p=0
-        and  parms()<3;
+        and %parms()<3;
           return '';
         endIf;
 
-       p+= len(prm)+2;
-       p2= scan(')':cmd:p);
+       p+=%len(prm)+2;
+       p2=%scan(')':cmd:p);
        l=p2-p;
 
-       prmValue= subst(cmd:p:l);
+       prmValue=%subst(cmd:p:l);
 
        return prmValue;
      p                 e
@@ -455,13 +455,13 @@
        if MaxParm>0;
          sbmBuffer+=' Parm(';
          for v=1 to maxParm;
-           sbmBuffer+=''''+ scanrpl('''':'''''':oParm(v))+''' ';
+           sbmBuffer+=''''+%scanrpl('''':'''''':oParm(v))+''' ';
          endFor;
          sbmBuffer+=')';
        endIf;
        sbmBuffer+=')';
        // other parameters
-       sbmBuffer+= subst(buffer: len(order)+1);
+       sbmBuffer+=%subst(buffer:%len(order)+1);
        buffer=sbmBuffer;
        RetCod='1';
        fStop=*on;
@@ -476,19 +476,19 @@
      D goAS400cmd      PI
        // if xExec : increment the recursion call level
        if order='XEXEC';
-         buffer='XEXEC$' +  subst(buffer:6);
-         if  scan(' FILE(':$upper(buffer))=0;
+         buffer='XEXEC$' + %subst(buffer:6);
+         if %scan(' FILE(':$upper(buffer))=0;
            buffer+=' FILE('+xScrLib$+'/'+xScrFil$+')';
          endif;
-         if  scan(' PARM(':$upper(buffer))=0;
+         if %scan(' PARM(':$upper(buffer))=0;
            buffer+=' PARM(*NONE)';
          endIf;
-         buffer+=' CALLLVL('+ char(callLvl+1)+')';
+         buffer+=' CALLLVL('+%char(callLvl+1)+')';
        endIf;
        monitor;
-         QCmdExc(buffer: len(buffer));
+         QCmdExc(buffer:%len(buffer));
        on-error;
-         Message= trim(pgmSds.msgtxt);
+         Message=%trim(pgmSds.msgtxt);
          fError=*on;
          return;
        endmon;
@@ -506,10 +506,10 @@
      D space           s            228    inz('')
      D pDta_           S            228
        pDta_=pDta;
-       if  parms()=3;
-         pDta_= subst(space:1:margin-1)+ trimR(pDta_);
+       if %parms()=3;
+         pDta_=%subst(space:1:margin-1)+%trimR(pDta_);
        endif;
-       pDta_=color+ subst(space:1:callLvl*2)+ trimR(pDta_);
+       pDta_=color+%subst(space:1:callLvl*2)+%trimR(pDta_);
        logSeq+=1;
        exec sql insert into xLog (srcdta, srcseq) values(:pDta_,:logSeq);
      p                 e
@@ -521,7 +521,7 @@
      d duration        s             30a   varying
 
        if message<>'';
-         t2= timeStamp();
+         t2=%timeStamp();
          duration=getDuration(t2:t1);
          message+='  '+duration+' ';
        endif;
@@ -552,10 +552,10 @@
        endIf;
        // Message for script ending (first call only)
        if callLvl=0;
-         t2= timestamp();
+         t2=%timestamp();
          duration=getDuration(t2:t0);
          addLog(GR:'Script '+xScrLib$+'/'+xScrFil$+'.'+xScrMbr$
-               +' ended on ' + char( date())+ ' at ' + char( time())
+               +' ended on ' +%char(%date())+ ' at ' +%char(%time())
                +'  '+duration+' '+g);
        endIf;
        *inlr=*on;
@@ -567,7 +567,7 @@
      d $upper          pi           256    varying
      d  xIn                         256    varying const
 
-       return  xlate('abcdefghijklmnopqrstuvwxyz_'
+       return %xlate('abcdefghijklmnopqrstuvwxyz_'
                     :'ABCDEFGHIJKLMNOPQRSTUVWXYZ-'
                     :xIn);
      p                 e
@@ -580,11 +580,11 @@
      d  phrase                      256    varying const
       *
      d  p              s              5u 0
-       if  len(phrase)< len(search);
+       if %len(phrase)<%len(search);
          return 0;
        endIf;
-       for p= len(phrase)- len(search)+1 downto 1;
-         if  subst(phrase:p: len(search))=search;
+       for p=%len(phrase)-%len(search)+1 downto 1;
+         if %subst(phrase:p:%len(search))=search;
            return p;
          endif;
        endfor;

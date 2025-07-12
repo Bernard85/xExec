@@ -1,8 +1,8 @@
-/* VERSION: 2025-07-07                                               */
+/* VERSION: 2025-07-12                                               */
 /* ------------------------------------------------------------------*/
-/* CRTCMD   CMD(BERNARD85/XEXEC)                                     */
-/*          PGM(BERNARD85/XEXECPPC1)                                 */
-/*          SRCFILE(BERNARD85/SRC)                                   */
+/* CRTCMD   CMD(yourlib/XEXEC)                                       */
+/*          PGM(yourlib/XEXECPPC1)                                   */
+/*          SRCFILE(yourlib/SRC)                                     */
 /*          SRCMBR(XEXEC)                                            */
 /* ------------------------------------------------------------------*/
              CMD        PROMPT('Execute XScript')

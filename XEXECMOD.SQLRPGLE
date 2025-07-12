@@ -1,7 +1,7 @@
-      // VERSION: 2025-07-07
+      // VERSION: 2025-07-12
      H option(*nodebugio) nomain
       // -----------------------------------------------------------------------
-      // Replace  n by value n
+      // Replace &n by value n
       // -----------------------------------------------------------------------
      P REPLACEALL      B                   export
      D REPLACEALL      PI
@@ -62,13 +62,13 @@
        v(8)=v8;
        v(9)=v9;
        //
-       strOut= trimR(strIn);
-       for i=1 to  elem(v);
+       strOut=%trimR(strIn);
+       for i=1 to %elem(v);
          if n(i)=-1;
            return;
          endIf;
-       //strOut= scanRpl(' '+ trim( char(i)):v(i):strOut);
-         strOut=scanRpl(' '+ trim( char(i)):v(i):strOut);
+       //strOut=%scanRpl('&'+%trim(%char(i)):v(i):strOut);
+         strOut=scanRpl('&'+%trim(%char(i)):v(i):strOut);
        endFor;
        return;
      P                 e
@@ -86,24 +86,24 @@
      d p3              s              3u 0
       *
        wTarget=wSource;
-       p1= scan(wScan:wTarget);
+       p1=%scan(wScan:wTarget);
        dow p1>0;
-         p3= check(' '
+         p3=%check(' '
                   :wTarget
-                  :$min( len(wTarget):p1+ len(wScan)));
-         if p3>0 and subst(wTarget:p3:p1)=' ';
-            subst(wTarget:p1:p3-p1+1)='';
-           wTarget= replace(wReplace
+                  :$min(%len(wTarget):p1+%len(wScan)));
+         if p3>0 and%subst(wTarget:p3:p1)=' ';
+           %subst(wTarget:p1:p3-p1+1)='';
+           wTarget=%replace(wReplace
                            :wTarget
                            :p1
-                           :$min( len(wReplace):p3-p1+1));
+                           :$min(%len(wReplace):p3-p1+1));
          else;
-           wTarget= replace(wReplace
+           wTarget=%replace(wReplace
                            :wTarget
                            :p1
-                           : len(wScan));
+                           :%len(wScan));
          endIf;
-         p1= scan(wScan:wTarget);
+         p1=%scan(wScan:wTarget);
        enddo;
        return wTarget;
      p                 e
@@ -123,17 +123,17 @@
        // Bla bla   . . . . . . . . . . . .  24/10/24 18:23:00 ok
        // . . . . . . *12   *. . . . . . . . 24/10/24 18:23:00 ok
        out$=in;
-       p= checkr('. ':out$:29);
+       p=%checkr('. ':out$:29);
 
        if p=0;
          out$=*all'. ';
-       elseIf  rem(p:2)=0;
-          subst(out$:p+2)=*all' .';
+       elseIf %rem(p:2)=0;
+         %subst(out$:p+2)=*all' .';
        else;
-          subst(out$:p+1)=*all' .';
+         %subst(out$:p+1)=*all' .';
        endIf;
        // format the timestamp
-       atr= char( date():*dmy/)+' '+ char( time():*hms);
+       atr=%char(%date():*dmy/)+' '+%char(%time():*hms);
        // define color and status
        if     status='OK';
          atr = x'3b'+atr+' Ok';                  // 
@@ -149,7 +149,7 @@
          atr = x'3b'+atr+' ??';                  // 
        endIf;
 
-        subst(out$:30)=atr;
+       %subst(out$:30)=atr;
 
        return out$;
      p                 e
@@ -158,7 +158,7 @@
       // -----------------------------------------------------------------------
      pgetNow           b                   export
      d getNow          pi            26a
-       return  char( timestamp());
+       return %char(%timestamp());
      p                 e
       // -----------------------------------------------------------------------
       // get duration
@@ -176,16 +176,16 @@
        // yyyymmddhhmmssnnnnnn
        // 12345678901234567890
        // 0000000000
-       w30a= editc(w20n6:'X');
+       w30a=%editc(w20n6:'X');
 
-       duration= subst(w30a:11:2)+':'+ subst(w30a:13:2);
+       duration=%subst(w30a:11:2)+':'+%subst(w30a:13:2);
 
-       if  subst(w30a:1:10)<>*all'0';
-         duration= subst(w30a:9:2)+':'+duration;
+       if %subst(w30a:1:10)<>*all'0';
+         duration=%subst(w30a:9:2)+':'+duration;
        endIf;
 
-       if  subst(w30a:1:8)<>*all'0';
-         duration= subst(w30a:7:2)+' days '+duration;
+       if %subst(w30a:1:8)<>*all'0';
+         duration=%subst(w30a:7:2)+' days '+duration;
        endIf;
 
        return duration;
