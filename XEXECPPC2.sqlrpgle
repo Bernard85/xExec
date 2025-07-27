@@ -1,5 +1,5 @@
-      // Version: 2025-07-12
-     H option(*nodebugio) DFTACTGRP(*NO) actgrp(*caller) bndDir('XEXEC')
+      // Version: 2025-07-27
+     H option(*nodebugio) DFTACTGRP(*NO) actgrp(*caller) bndDir('XEXECSRV')
       // -----------------------------------------------------------------------
       // CRTSQLRPGI OBJ(yourlib/XEXECPPC2)
       //            SRCFILE(yourlib/src)

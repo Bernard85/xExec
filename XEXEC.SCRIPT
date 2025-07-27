@@ -1,0 +1,66 @@
+// VERSION: 2025-07-27
+// In order to relaunch the script
+monitor;
+  drop Function REPLACEALL;
+  DLTBNDDIR BNDDIR(xexecsrv);
+  DLTSRVPGM SRVPGM(xexecsrv);
+end-monitor;
+
+// Create Service Program itself
+crtsqlrpgi srcfile(src) obj(qtemp/xexecsrv) objtype(*module);
+CRTSRVPGM SRVPGM(xexecsrv) MODULE(qtemp/xexecsrv) EXPORT(*ALL);
+dltmod qtemp/xexecsrv;
+CRTBNDDIR BNDDIR(xexecsrv);
+addbnddire bnddir(xexecsrv) obj((xexecsrv *srvpgm));
+
+// create the program xexecppc1
+crtbndcl pgm(xexecppc1)
+         SRCFILE(SRC)                                      ;
+// create the program xexecppc2
+CRTSQLRPGI OBJ(XEXECPPC2)
+           SRCFILE(SRC)                                    ;
+// create the command (3 parms)
+CRTcmd     cmd(XEXEC)
+           pgm(xexecppc1)
+           SRCFILE(SRC)                                    ;
+// create the command (4 parms)
+CRTcmd     cmd(XEXEC$)
+           pgm(xexecppc1)
+           SRCFILE(SRC)                                    ;
+
+// create the UDF REPLACEALL (V7.1)
+Create or replace Function REPLACEALL
+(srcdta varchar(228)
+,v1 varchar(80)
+,v2 varchar(80)
+,v3 varchar(80)
+,v4 varchar(80)
+,v5 varchar(80)
+,v6 varchar(80)
+,v7 varchar(80)
+,v8 varchar(80)
+,v9 varchar(80))
+returns varchar(228)
+language rpgle
+not deterministic
+no sql
+external name xExecSrv(replaceAll)
+parameter style sql                                        ;
+// create the User defined function REPLACEALL (V7.3)
+//Create or replace Function REPLACEALL
+//(srcdta varchar(228)
+//,v1 varchar(80) default null
+//,v2 varchar(80) default null
+//,v3 varchar(80) default null
+//,v4 varchar(80) default null
+//,v5 varchar(80) default null
+//,v6 varchar(80) default null
+//,v7 varchar(80) default null
+//,v8 varchar(80) default null
+//)returns varchar(228)
+//language rpgle
+//not deterministic
+//no sql
+//external name xExecSrv(replaceAll)
+//parameter style sql;
+

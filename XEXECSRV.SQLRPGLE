@@ -1,4 +1,4 @@
-      // VERSION: 2025-07-12
+      // VERSION: 2025-07-27
      H option(*nodebugio) nomain
       // -----------------------------------------------------------------------
       // Replace &n by value n
@@ -81,22 +81,29 @@
      d wReplace                     228    varying const
      d wSource                      228    varying const
       *
+     d spaces          s            132a   inz(*all' ')
      d wTarget         s            228    varying
      d p1              s              3u 0
      d p3              s              3u 0
+     d l               s              3u 0
+     d wReplace$       s                   like(wReplace)
       *
        wTarget=wSource;
        p1=%scan(wScan:wTarget);
        dow p1>0;
          p3=%check(' '
                   :wTarget
-                  :$min(%len(wTarget):p1+%len(wScan)));
-         if p3>0 and%subst(wTarget:p3:p1)=' ';
-           %subst(wTarget:p1:p3-p1+1)='';
-           wTarget=%replace(wReplace
+                  :p1+%len(wScan));
+         if p3>0 and %subst(wTarget:p3:1)=' ';
+           l=p3-p1+1;
+           wReplace$=wReplace;
+           if %len(wReplace)<l;
+             wReplace$+=%subst(spaces:1:l-%len(wReplace));
+           endIf;
+           wTarget=%replace(wReplace$
                            :wTarget
                            :p1
-                           :$min(%len(wReplace):p3-p1+1));
+                           :l);
          else;
            wTarget=%replace(wReplace
                            :wTarget
@@ -190,17 +197,4 @@
 
        return duration;
 
-     p                 e
-      // -----------------------------------------------------------------------
-      // get minus of values
-      // -----------------------------------------------------------------------
-     p$min             b
-     d $min            pi             3u 0
-     d  i1                            3u 0  const
-     d  i2                            3u 0  const
-       if i1<i2;
-         return i1;
-       else;
-         return i2;
-       endif;
      p                 e

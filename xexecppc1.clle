@@ -1,17 +1,17 @@
-/* VERSION: 2025-07-12                                               */
+/* VERSION: 2025-07-27                                               */
 /* ------------------------------------------------------------------*/
 /* crtbndcl pgm(yourlib/xexecppc1)                                   */
 /*          SRCFILE(yourlib/SRC)   strstmf('/?/src/xexecppc1.clle')  */
 /* ------------------------------------------------------------------*/
              PGM        PARM(&XSCRIPT &FILE &PARMS &CALLLVL)
 
-DCLPRCOPT  DFTACTGRP(*NO) ACTGRP(*NEW) BNDDIR(XEXEC)
+DCLPRCOPT  DFTACTGRP(*NO) ACTGRP(*NEW) BNDDIR(XEXECSRV)
 
 DCL        VAR(&XSCRIPT)    TYPE(*CHAR) LEN(10)
 DCL        VAR(&FILE)       TYPE(*CHAR) LEN(20)
 dcl        VAR(&XSCRIPTFIL) TYPE(*CHAR) LEN(10)
 DCL        VAR(&XSCRIPTLIB) TYPE(*CHAR) LEN(10)
-DCL        VAR(&callLvl_)    TYPE(*DEC) LEN(2)
+/*DCL        VAR(&callLvl_)    TYPE(*DEC) LEN(2)*/
 DCL        VAR(&callLvl)    TYPE(*DEC) LEN(2)
 DCL        VAR(&PARMS)      TYPE(*CHAR) LEN(740) /* 2+(80+2)*9 */
 DCL        VAR(&RETCOD)     TYPE(*char) LEN(1)
